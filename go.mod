@@ -1,6 +1,6 @@
-module github.com/filinvadim/go-cloud-pubsub-mqtt
+module github.com/frantjc/go-pubsubmqtt
 
-go 1.20
+go 1.21
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.2.0

@@ -5,12 +5,13 @@ import (
 	"context"
 	"encoding/gob"
 	"errors"
-	"github.com/google/uuid"
-	"gocloud.dev/gcerrors"
-	"gocloud.dev/pubsub/driver"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
+	"gocloud.dev/gcerrors"
+	"gocloud.dev/pubsub/driver"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -34,7 +35,7 @@ var (
 type (
 	Subscriber interface {
 		Subscribe(topic string, handler mqtt.MessageHandler, qos *byte) error
-		UnSubscribe(topic string) error
+		Unsubscribe(topic string) error
 		Close() error
 	}
 
@@ -131,13 +132,13 @@ func makeDefaultConnect(clientID, url string) (mqtt.Client, error) {
 	return mqttClient, nil
 }
 
-// qos is optional
+// qos is optional.
 func (p *publisher) Publish(topic string, payload interface{}, qos *byte) error {
 	if p.isStopped {
 		return nil
 	}
 
-	var q = p.qos
+	q := p.qos
 	if qos != nil {
 		q = *qos
 	}
@@ -165,7 +166,7 @@ func (p *publisher) Stop() error {
 	return nil
 }
 
-// qos is optional
+// qos is optional.
 func (s *subscriber) Subscribe(topic string, handler mqtt.MessageHandler, qos *byte) error {
 	if !s.subConnect.IsConnected() {
 		return errMQTTDisconnected
@@ -173,7 +174,7 @@ func (s *subscriber) Subscribe(topic string, handler mqtt.MessageHandler, qos *b
 
 	topic = strings.TrimSuffix(strings.TrimPrefix(topic, "/"), "/")
 
-	var q = s.qos
+	q := s.qos
 	if qos != nil {
 		q = *qos
 	}
@@ -191,7 +192,7 @@ func (s *subscriber) Subscribe(topic string, handler mqtt.MessageHandler, qos *b
 	return nil
 }
 
-func (s *subscriber) UnSubscribe(topic string) error {
+func (s *subscriber) Unsubscribe(topic string) error {
 	if !s.subConnect.IsConnected() {
 		return errMQTTDisconnected
 	}

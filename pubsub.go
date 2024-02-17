@@ -50,8 +50,8 @@ const Scheme = "mqtt"
 // No query parameters are supported.
 type URLOpener struct {
 	// Connection to use for communication with the server.
-	SubConn Subscriber
-	PubConn Publisher
+	Subscriber
+	Publisher
 
 	// TopicOptions specifies the options to pass to OpenTopic.
 	TopicOptions TopicOptions
@@ -77,7 +77,7 @@ func (o *defaultDialer) defaultSubscriber(ctx context.Context) (*URLOpener, erro
 	}
 
 	o.opener = &URLOpener{
-		SubConn: conn,
+		Subscriber: conn,
 	}
 	return o.opener, o.err
 }
@@ -92,7 +92,7 @@ func (o *defaultDialer) defaultPublisher(ctx context.Context) (*URLOpener, error
 		return nil, err
 	}
 	o.opener = &URLOpener{
-		PubConn: conn,
+		Publisher: conn,
 	}
 	return o.opener, o.err
 }
@@ -114,21 +114,21 @@ func (o *defaultDialer) OpenSubscriptionURL(ctx context.Context, u *url.URL) (*p
 }
 
 // OpenTopicURL opens a pubsub.Topic based on u.
-func (o *URLOpener) OpenTopicURL(ctx context.Context, u *url.URL) (*pubsub.Topic, error) {
+func (o *URLOpener) OpenTopicURL(_ context.Context, u *url.URL) (*pubsub.Topic, error) {
 	for param := range u.Query() {
 		return nil, fmt.Errorf("open topic %v: invalid query parameter %q", u, param)
 	}
 	exchangeName := path.Join(u.Host, u.Path)
-	return OpenTopic(o.PubConn, exchangeName, &o.TopicOptions)
+	return OpenTopic(o.Publisher, exchangeName, &o.TopicOptions)
 }
 
 // OpenSubscriptionURL opens a pubsub.Subscription based on u.
-func (o *URLOpener) OpenSubscriptionURL(ctx context.Context, u *url.URL) (*pubsub.Subscription, error) {
+func (o *URLOpener) OpenSubscriptionURL(_ context.Context, u *url.URL) (*pubsub.Subscription, error) {
 	for param := range u.Query() {
 		return nil, fmt.Errorf("open subscription %v: invalid query parameter %q", u, param)
 	}
 	queueName := path.Join(u.Host, u.Path)
-	return OpenSubscription(o.SubConn, queueName, &o.SubscriptionOptions)
+	return OpenSubscription(o.Subscriber, queueName, &o.SubscriptionOptions)
 }
 
 type topic struct {
@@ -212,12 +212,12 @@ func (t *topic) As(i interface{}) bool {
 	return true
 }
 
-// ErrorAs implements driver.Topic.ErrorAs
+// ErrorAs implements driver.Topic.ErrorAs.
 func (*topic) ErrorAs(error, interface{}) bool {
 	return false
 }
 
-// ErrorCode implements driver.Topic.ErrorCode
+// ErrorCode implements driver.Topic.ErrorCode.
 func (*topic) ErrorCode(err error) gcerrors.ErrorCode {
 	return whichError(err)
 }
@@ -374,8 +374,8 @@ func (s *subscription) SendAcks(ctx context.Context, ids []driver.AckID) error {
 // CanNack implements driver.CanNack.
 func (*subscription) CanNack() bool { return false }
 
-// SendNacks implements driver.Subscription.SendNacks. MQTT doesn't have implementation for NACK
-func (*subscription) SendNacks(ctx context.Context, ids []driver.AckID) error { return nil }
+// SendNacks implements driver.Subscription.SendNacks. MQTT doesn't have implementation for NACK.
+func (*subscription) SendNacks(_ context.Context, _ []driver.AckID) error { return nil }
 
 // IsRetryable implements driver.Subscription.IsRetryable.
 func (s *subscription) IsRetryable(error) bool { return false }
@@ -391,12 +391,12 @@ func (s *subscription) As(i interface{}) bool {
 	return true
 }
 
-// ErrorAs implements driver.Subscription.ErrorAs
+// ErrorAs implements driver.Subscription.ErrorAs.
 func (*subscription) ErrorAs(error, interface{}) bool {
 	return false
 }
 
-// ErrorCode implements driver.Subscription.ErrorCode
+// ErrorCode implements driver.Subscription.ErrorCode.
 func (*subscription) ErrorCode(err error) gcerrors.ErrorCode {
 	return whichError(err)
 }

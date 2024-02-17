@@ -1,14 +1,9 @@
-<p>
-  <a href="https://github.com/filinvadim/go-cloud-pubsub-mqtt/actions"><img alt="golang-action status" src="https://github.com/filinvadim/go-cloud-pubsub-mqtt/workflows/Go/badge.svg"></a>
-</p>
+# go-pubsubmqtt [![CI](https://github.com/frantjc/go-pubsubmqtt/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/frantjc/go-pubsubmqtt/actions) [![godoc](https://pkg.go.dev/badge/github.com/frantjc/go-pubsubmqtt.svg)](https://pkg.go.dev/github.com/frantjc/go-pubsubmqtt) [![goreportcard](https://goreportcard.com/badge/github.com/frantjc/go-pubsubmqtt)](https://goreportcard.com/report/github.com/frantjc/go-pubsubmqtt) ![license](https://shields.io/github/license/frantjc/go-pubsubmqtt)
 
-# go-cloud-pubsub-mqtt
+[Go](https://go.dev) module to create `http.Handler`s with similar functionality to Kubernetes pubsubmqtt objects.
 
-MQTT pubsub driver for Go Cloud Development Kit. Just put it in `go-cloud/pubsub/` package or do whetever you want. :)
+## install
 
-
-# REFERENCES:
-
-> https://github.com/google/go-cloud/issues/1466
-
-> https://github.com/google/go-cloud/pull/2751
+```sh
+go get github.com/frantjc/go-pubsubmqtt
+```

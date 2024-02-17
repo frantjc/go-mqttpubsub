@@ -16,89 +16,59 @@ package mqttpubsub_test
 
 import (
 	"context"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/filinvadim/go-cloud-pubsub-mqtt"
-	"gocloud.dev/pubsub"
 	"log"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
+	mqttpubsub "github.com/frantjc/go-pubsubmqtt"
 )
 
-func ExampleOpenTopic() {
-	// PRAGMA: This example is used on gocloud.dev; PRAGMA comments adjust how it is shown and can be ignored.
-	// PRAGMA: On gocloud.dev, hide lines until the next blank line.
-	ctx := context.Background()
+var ctx = context.Background()
 
+func ExampleOpenTopic() {
 	opts := mqtt.NewClientOptions()
 	opts = opts.AddBroker("mqtt://mqtt.example.com")
 	opts.ClientID = "exampleClient"
 	cli := mqtt.NewClient(opts)
+	defer cli.Disconnect(0)
 	token := cli.Connect()
 	if token.Wait() && token.Error() != nil {
-		log.Fatal(token.Error())
+		log.Println(token.Error())
+		return
 	}
-
-	defer cli.Disconnect(0)
 
 	topic, err := mqttpubsub.OpenTopic(mqttpubsub.NewPublisher(cli, 0, 0), "example.mysubject", nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
+		return
 	}
-	defer topic.Shutdown(ctx)
+	defer func() {
+		_ = topic.Shutdown(ctx)
+	}()
 }
 
 func ExampleOpenSubscription() {
-	// PRAGMA: This example is used on gocloud.dev; PRAGMA comments adjust how it is shown and can be ignored.
-	// PRAGMA: On gocloud.dev, hide lines until the next blank line.
-	ctx := context.Background()
-
 	opts := mqtt.NewClientOptions()
 	opts = opts.AddBroker("mqtt://mqtt.example.com")
 	opts.ClientID = "exampleClient"
 	cli := mqtt.NewClient(opts)
-	token := cli.Connect()
-	if token.Wait() && token.Error() != nil {
-		log.Fatal(token.Error())
-	}
-
 	defer cli.Disconnect(0)
+	token := cli.Connect()
+	if token.Wait() {
+		if err := token.Error(); err != nil {
+			log.Println(token.Error())
+			return
+		}
+	}
 
 	subscription, err := mqttpubsub.OpenSubscription(
 		mqttpubsub.NewSubscriber(cli, 0, 0),
 		"example.mysubject",
 		nil)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(token.Error())
+		return
 	}
-	defer subscription.Shutdown(ctx)
-}
-
-func Example_openTopicFromURL() {
-	// PRAGMA: This example is used on gocloud.dev; PRAGMA comments adjust how it is shown and can be ignored.
-	// PRAGMA: On gocloud.dev, add a blank import: _ "gocloud.dev/pubsub/mqttpubsub"
-	// PRAGMA: On gocloud.dev, hide lines until the next blank line.
-	ctx := context.Background()
-
-	// pubsub.OpenTopic creates a *pubsub.Topic from a URL.
-	// This URL will Dial the MQTT server at the URL in the environment variable
-	// MQTT_SERVER_URL and send messages with subject "example.mysubject".
-	topic, err := pubsub.OpenTopic(ctx, "mqtt://example.mysubject")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer topic.Shutdown(ctx)
-}
-
-func Example_openSubscriptionFromURL() {
-	// PRAGMA: This example is used on gocloud.dev; PRAGMA comments adjust how it is shown and can be ignored.
-	// PRAGMA: On gocloud.dev, add a blank import: _ "gocloud.dev/pubsub/mqttpubsub"
-	// PRAGMA: On gocloud.dev, hide lines until the next blank line.
-	ctx := context.Background()
-
-	// pubsub.OpenSubscription creates a *pubsub.Subscription from a URL.
-	// This URL will Dial the MQTT server at the URL in the environment variable
-	// MQTT_SERVER_URL and receive messages with subject "example.mysubject".
-	subscription, err := pubsub.OpenSubscription(ctx, "mqtt://example.mysubject")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer subscription.Shutdown(ctx)
+	defer func() {
+		_ = subscription.Shutdown(ctx)
+	}()
 }

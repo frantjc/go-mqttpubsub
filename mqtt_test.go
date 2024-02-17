@@ -40,15 +40,10 @@ type harness struct {
 	Publisher
 }
 
-type logger interface {
-	Log(v ...interface{})
-}
-
-func newSubPub(ctx context.Context, l logger) (*harness, error) {
+func newSubPub(_ context.Context) (*harness, error) {
 	url := fmt.Sprintf("%s:%d", localTestHost, testPort)
 
 	if !isMQTTListens() {
-		l.Log("using the public server because the local MQTT server is not available")
 		url = fmt.Sprintf("%s:%d", publicTestHost, testPort)
 	}
 
@@ -56,6 +51,7 @@ func newSubPub(ctx context.Context, l logger) (*harness, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	pub, err := defaultPubClient(url)
 	if err != nil {
 		return nil, err
@@ -64,11 +60,11 @@ func newSubPub(ctx context.Context, l logger) (*harness, error) {
 	return &harness{sub, pub}, nil
 }
 
-func newHarness(ctx context.Context, t *testing.T) (drivertest.Harness, error) {
-	return newSubPub(ctx, t)
+func newHarness(ctx context.Context, _ *testing.T) (drivertest.Harness, error) {
+	return newSubPub(ctx)
 }
 
-func (h *harness) CreateTopic(ctx context.Context, testName string) (driver.Topic, func(), error) {
+func (h *harness) CreateTopic(_ context.Context, testName string) (driver.Topic, func(), error) {
 	cleanup := func() {}
 	dt, err := openTopic(h.Publisher, testName)
 	if err != nil {
@@ -78,12 +74,12 @@ func (h *harness) CreateTopic(ctx context.Context, testName string) (driver.Topi
 	return dt, cleanup, nil
 }
 
-func (h *harness) MakeNonexistentTopic(ctx context.Context) (driver.Topic, error) {
+func (h *harness) MakeNonexistentTopic(_ context.Context) (driver.Topic, error) {
 	// A nil *topic behaves like a nonexistent topic.
 	return (*topic)(nil), nil
 }
 
-func (h *harness) CreateSubscription(ctx context.Context, dt driver.Topic, testName string) (driver.Subscription, func(), error) {
+func (h *harness) CreateSubscription(_ context.Context, _ driver.Topic, testName string) (driver.Subscription, func(), error) {
 	ds, err := openSubscription(h.Subscriber, testName, &SubscriptionOptions{WaitTime: 10 * time.Millisecond})
 	if err != nil {
 		return nil, nil, err
@@ -91,24 +87,24 @@ func (h *harness) CreateSubscription(ctx context.Context, dt driver.Topic, testN
 	cleanup := func() {
 		var sub Subscriber
 		if ds.As(&sub) {
-			h.Subscriber.UnSubscribe(testName)
+			_ = h.Subscriber.Unsubscribe(testName)
 		}
 	}
 	return ds, cleanup, nil
 }
 
-func (h *harness) MakeNonexistentSubscription(ctx context.Context) (driver.Subscription, error) {
+func (h *harness) MakeNonexistentSubscription(_ context.Context) (driver.Subscription, error) {
 	return (*subscription)(nil), nil
 }
 
 func (h *harness) Close() {
-	h.Publisher.Stop()
-	h.Subscriber.Close()
+	_ = h.Publisher.Stop()
+	_ = h.Subscriber.Close()
 }
 
 func (*harness) MaxBatchSizes() (int, int) { return 0, 0 }
 
-// supported from MQTT v5.0. Not supported by "github.com/eclipse/paho.mqtt.golang" driver
+// supported from MQTT v5.0. Not supported by "github.com/eclipse/paho.mqtt.golang" driver.
 func (*harness) SupportsMultipleSubscriptions() bool { return false }
 
 type mqttAsTest struct{}
@@ -169,7 +165,7 @@ func (mqttAsTest) MessageCheck(m *pubsub.Message) error {
 	return nil
 }
 
-func (mqttAsTest) BeforeSend(as func(interface{}) bool) error {
+func (mqttAsTest) BeforeSend(_ func(interface{}) bool) error {
 	return nil
 }
 
@@ -179,7 +175,7 @@ func TestConformance(t *testing.T) {
 }
 
 func BenchmarkBench(b *testing.B) {
-	hs, err := newSubPub(context.TODO(), b)
+	hs, err := newSubPub(context.TODO())
 	if err != nil {
 		b.Fatal(err)
 	}
