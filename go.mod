@@ -1,4 +1,4 @@
-module github.com/frantjc/go-pubsubmqtt
+module github.com/frantjc/go-mqttpubsub
 
 go 1.21
 
