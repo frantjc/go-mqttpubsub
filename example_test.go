@@ -19,7 +19,7 @@ import (
 	"log"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	mqttpubsub "github.com/frantjc/go-pubsubmqtt"
+	mqttpubsub "github.com/frantjc/go-mqttpubsub"
 )
 
 var ctx = context.Background()
