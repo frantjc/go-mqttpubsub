@@ -183,7 +183,7 @@ func (t *topic) SendBatch(ctx context.Context, msgs []*driver.Message) error {
 		}
 
 		if msg.BeforeSend != nil {
-			asFunc := func(i interface{}) bool { return false }
+			asFunc := func(_ interface{}) bool { return false }
 			if err := msg.BeforeSend(asFunc); err != nil {
 				errs = errors.Join(errs, err)
 			}
@@ -263,7 +263,7 @@ func openSubscription(conn Subscriber, topicName string, opts *SubscriptionOptio
 		ds.opts = &SubscriptionOptions{}
 	}
 
-	err := ds.conn.Subscribe(topicName, func(client mqtt.Client, m mqtt.Message) {
+	err := ds.conn.Subscribe(topicName, func(_ mqtt.Client, m mqtt.Message) {
 		ds.msgMx.Lock()
 		ds.msgs = append(ds.msgs, m)
 		ds.msgMx.Unlock()

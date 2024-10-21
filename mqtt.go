@@ -19,16 +19,16 @@ import (
 const (
 	defaultTimeout = 2 * time.Second
 	defaultQOS     = 0
-	defaultPubID   = "go-cloud-publisher"
-	defaultSubID   = "go-cloud-subscriber"
+	defaultPubID   = "gocloud-pub"
+	defaultSubID   = "gocloud-sub"
 	delimiter      = "-"
 )
 
 var (
-	errNoURLEnv         = errors.New("mqttpubsub: no url env provided ")
+	errNoURLEnv         = errors.New("mqttpubsub: no url env provided")
 	errInvalidMessage   = errors.New("mqttpubsub: invalid or empty message")
 	errConnRequired     = errors.New("mqttpubsub: mqtt connection is required")
-	errStillConnected   = errors.New("mqttpubsub: still connected. Kill all processes manually")
+	errStillConnected   = errors.New("mqttpubsub: still connected")
 	errMQTTDisconnected = errors.New("mqttpubsub: disconnected")
 )
 

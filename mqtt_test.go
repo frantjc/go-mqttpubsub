@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package mqttpubsub
+package mqttpubsub //nolint:testpackage
 
 import (
 	"context"
@@ -93,8 +93,8 @@ func (h *harness) CreateSubscription(_ context.Context, _ driver.Topic, testName
 	return ds, cleanup, nil
 }
 
-func (h *harness) MakeNonexistentSubscription(_ context.Context) (driver.Subscription, error) {
-	return (*subscription)(nil), nil
+func (h *harness) MakeNonexistentSubscription(_ context.Context) (driver.Subscription, func(), error) {
+	return (*subscription)(nil), func() {}, nil
 }
 
 func (h *harness) Close() {
@@ -162,6 +162,10 @@ func (mqttAsTest) MessageCheck(m *pubsub.Message) error {
 	if !m.As(&ppm) {
 		return fmt.Errorf("cast failed for %T", &ppm)
 	}
+	return nil
+}
+
+func (mqttAsTest) AfterSend(_ func(interface{}) bool) error {
 	return nil
 }
 
